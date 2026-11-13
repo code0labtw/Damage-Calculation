@@ -5,76 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>砲擊倍率計算</title>
 <style>
-:root{color-scheme:light dark;
---bg:light-dark(#f4f5f7,#16181d);--card:light-dark(#fff,#21242b);--field:light-dark(#eceff4,#2f3542);
---text:light-dark(#1d2129,#e8eaed);--sub:light-dark(#6b7280,#9aa0aa);--line:light-dark(#d9dde3,#3d4453);
---accent:light-dark(#3b6fd4,#6c9bff);--res:light-dark(#eef3ff,#1b2437);
-padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+:root{color-scheme:light dark;--bg:light-dark(#f1f2f8,#12141c);--ink:light-dark(#171a2b,#e9ebf7);--mute:light-dark(#5b6078,#9aa0bd);--line:light-dark(#d5d8e8,#2c3044);--field:light-dark(#fff,#1b1e2b);--acc:light-dark(#4b3fe0,#a39dff);--on-acc:light-dark(#fff,#14122e)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;line-height:1.5}
-.wrap{max-width:560px;margin:0 auto;padding:16px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-h1{font-size:20px;margin:0}
-h2{font-size:15px;margin:0 0 10px;color:var(--sub);font-weight:600}
-button{border:1px solid var(--line);background:none;color:var(--text);border-radius:8px;font-size:14px;padding:8px 10px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
-label{display:block;font-size:13px;color:var(--sub)}
-.row,.x{display:flex;align-items:center;gap:8px;margin-top:4px}
-input,select{width:100%;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text);outline:none}
-select{width:90px;flex:none;background:light-dark(#dce6fa,#34415e);color:var(--accent);font-weight:600;border-color:var(--accent)}
-#mults{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.result{background:var(--res);border-color:var(--accent)}
-.big{font-size:28px;font-weight:700;color:var(--accent);word-break:break-all}
-.small{font-size:13px;color:var(--sub);margin-top:4px}
-.btns{display:flex;gap:8px}
+body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.6 "Noto Sans TC",system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+::selection{background:var(--acc);color:var(--on-acc)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+main{width:min(480px,100% - 32px);margin:0 auto;padding:20px 0 32px;display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px 12px}
+h1{margin:0 auto 0 0;font-size:1.25rem;line-height:1.2;white-space:nowrap}
+h2{margin:0 0 8px;font-size:.9375rem}
+h2 small{margin-left:8px;color:var(--mute);font-weight:400;font-size:.875rem}
+button{min-height:36px;padding:0 12px;background:none;border:1px solid var(--line);border-radius:999px;color:var(--mute);font:inherit;font-size:.8125rem;white-space:nowrap;cursor:pointer;transition:border-color .15s,color .15s,transform .12s cubic-bezier(.2,.8,.2,1)}
+button:hover{border-color:var(--acc);color:var(--acc)}
+button:active{transform:scale(.97)}
+input,select{min-height:44px;padding:8px 12px;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:10px;font:inherit;caret-color:var(--acc);font-variant-numeric:tabular-nums}
+.base{display:flex;gap:10px}
+.base input{flex:1;min-width:0;font-size:1.5rem}
+select{color:var(--acc);font-weight:700;border-color:var(--acc)}
+#mults{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px}
+#mults label{display:grid;gap:4px;color:var(--mute);font-size:.8125rem}
+#mults input{width:100%;color:var(--ink);font-size:1rem}
+.total{padding-top:16px;border-top:2px solid var(--ink)}
+#out{margin:0 0 6px;color:var(--acc);font-size:clamp(2.25rem,11vw,3rem);font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.small{color:var(--mute);font-size:.875rem;font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header><h1>砲擊倍率計算</h1><div class="btns"><button id="clear">全部清空</button><button id="theme">切換淺/深色</button></div></header>
+<main>
+<header><h1>砲擊倍率計算</h1><button id="clear">全部清空</button><button id="theme">切換深淺</button></header>
 
-<div class="card">
+<div>
 <h2>砲擊數字</h2>
-<label>數值
-<div class="row">
-<input id="base" type="number" inputmode="decimal" step="any">
-<select id="unit"><option value="1e8">億</option><option value="1e12">兆</option></select>
+<div class="base">
+<input id="base" type="number" inputmode="decimal" step="any" aria-label="砲擊數值">
+<select id="unit" aria-label="單位"><option value="1e8">億</option><option value="1e12">兆</option></select>
 </div>
-</label>
 </div>
 
-<div class="card">
-<h2>砲擊後增加倍率（留空 = 不加成）</h2>
+<div>
+<h2>砲擊後增加倍率<small>留空 = ×1</small></h2>
 <div id="mults"></div>
 </div>
 
-<div class="card result">
+<div class="total" aria-live="polite">
 <h2>計算結果</h2>
-<div class="big" id="out">—</div>
+<div id="out">—</div>
 <div class="small" id="mult"></div>
 <div class="small" id="raw"></div>
 </div>
-</div>
+</main>
 
 <script>
 const $=id=>document.getElementById(id);
 const names=['頭隊長技','尾隊長技','隊伍技','龍刻增傷','隊員 1 增傷','隊員 2 增傷','隊員 3 增傷','隊員 4 增傷'];
-$('mults').innerHTML=names.map(n=>`<label>${n}<div class="x">×<input class="m" type="number" inputmode="decimal" step="any"></div></label>`).join('');
+$('mults').innerHTML=names.map(n=>`<label>${n}<input class="m" type="number" inputmode="decimal" step="any"></label>`).join('');
 const ms=[...document.querySelectorAll('.m')];
-
-const units=[[1e16,'京'],[1e12,'兆'],[1e8,'億']];
-function fmt(v){
-  const u=units.find(([n])=>v>=n);
-  return u?+(v/u[0]).toPrecision(6)+' '+u[1]:v.toLocaleString('zh-TW',{maximumFractionDigits:2});
-}
+const fmt=v=>{const u=[[1e16,'京'],[1e12,'兆'],[1e8,'億']].find(([n])=>v>=n);return u?+(v/u[0]).toPrecision(6)+' '+u[1]:v.toLocaleString('zh-TW',{maximumFractionDigits:2})};
 function calc(){
-  const raw=parseFloat($('base').value);
+  const raw=parseFloat($('base').value),base=raw*$('unit').value;
   const mult=ms.reduce((m,i)=>m*(parseFloat(i.value)||1),1);
   $('mult').textContent='總倍率 ×'+(+mult.toPrecision(8));
-  const ok=!isNaN(raw);
-  const base=raw*$('unit').value;
-  $('out').textContent=ok?fmt(base*mult):'—';
-  $('raw').textContent=ok?'原始砲擊：'+fmt(base):'';
+  $('out').textContent=isNaN(raw)?'—':fmt(base*mult);
+  $('raw').textContent=isNaN(raw)?'':'原始砲擊：'+fmt(base);
 }
 document.addEventListener('input',calc);
 $('clear').onclick=()=>{document.querySelectorAll('input').forEach(i=>i.value='');calc();};
