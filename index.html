@@ -1,105 +1,715 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>砲擊倍率計算</title>
-<style>
-:root{color-scheme:light dark;--bg:light-dark(#f1f2f8,#12141c);--ink:light-dark(#171a2b,#e9ebf7);--mute:light-dark(#5b6078,#9aa0bd);--field:light-dark(#e2e5f2,#1d2130);--acc:light-dark(#4b3fe0,#a39dff);--on-acc:light-dark(#fff,#14122e);--tint:color-mix(in oklab,var(--acc) 16%,var(--field));--thumb:light-dark(#fff,#2d3350)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.5 "Noto Sans TC",system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-::selection{background:var(--acc);color:var(--on-acc)}
-:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-main{width:min(480px,100% - 32px);margin:0 auto;padding:20px 0 28px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
-h1{margin:0 auto 0 0;font-size:1.25rem;line-height:1.2;white-space:nowrap}
-button{min-height:36px;padding:0 12px;background:var(--field);border:0;border-radius:999px;color:var(--mute);font:inherit;font-size:.8125rem;white-space:nowrap;cursor:pointer;transition:color .15s,transform .12s cubic-bezier(.2,.8,.2,1)}
-button:hover{color:var(--acc)}
-button:active{transform:scale(.97)}
-.base{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
-.tile{display:block;padding:8px 12px 6px;background:var(--field);border-radius:12px;color:var(--mute);font-size:.75rem;cursor:text}
-.tile:focus-within,.tile:has(input:not(:placeholder-shown)){background:var(--tint)}
-.tile input{display:block;width:100%;min-height:32px;padding:0;background:none;border:0;outline:0;color:var(--ink);font:inherit;font-size:1.125rem;font-weight:600;caret-color:var(--acc);appearance:textfield;font-variant-numeric:tabular-nums}
-.tile input::-webkit-inner-spin-button{appearance:none}
-.tile:has(input:not(:placeholder-shown)) input{color:var(--acc)}
-.big input{font-size:1.75rem;min-height:40px}
-.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;background:var(--field);border-radius:14px;box-shadow:inset 0 1px 3px rgb(0 0 0/.22)}
-.seg::before{content:"";position:absolute;inset:4px auto 4px 4px;width:calc(50% - 4px);border-radius:10px;background:var(--thumb);box-shadow:0 1px 2px rgb(0 0 0/.25),0 6px 12px -4px rgb(0 0 0/.35),inset 0 1px 0 rgb(255 255 255/.1);transition:translate .28s cubic-bezier(.2,.8,.2,1)}
-.seg:has(label+label input:checked)::before{translate:100% 0}
-.seg label{position:relative;display:grid}
-.seg input{position:absolute;opacity:0}
-.seg span{position:relative;display:grid;place-items:center;min-width:56px;padding:0 12px;color:var(--mute);font-size:1.125rem;font-weight:700;cursor:pointer;transition:color .2s}
-.seg input:checked+span{color:var(--acc)}
-.seg input:focus-visible+span{outline:2px solid var(--acc);border-radius:10px}
-/* Simple, static unit selector */
-.base{align-items:stretch}
-.unit-panel{min-width:112px;display:flex;flex-direction:column;justify-content:center;gap:7px;padding:9px 10px;background:var(--field);border:1px solid color-mix(in oklab,var(--mute) 18%,transparent);border-radius:12px}
-.unit-caption{font-size:.75rem;font-weight:600;color:var(--mute)}
-.unit-options{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;background:color-mix(in oklab,var(--bg) 55%,var(--field));border-radius:8px}
-.unit-option{position:relative;display:block;min-width:0;cursor:pointer}
-.unit-option input{position:absolute;width:1px;height:1px;opacity:0}
-.unit-card{display:grid;min-height:34px;place-items:center;border-radius:6px;color:var(--mute);font-size:1rem;font-weight:700}
-.unit-option input:checked+.unit-card{background:var(--thumb);color:var(--acc)}
-.unit-option input:focus-visible+.unit-card{outline:2px solid var(--acc);outline-offset:1px}
-@media(max-width:380px){.base{grid-template-columns:minmax(0,1fr) 112px;gap:8px}.unit-panel{min-width:0;padding:8px}}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>砲擊倍率計算</title>
+  <meta name="description" content="砲擊倍率計算" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #E5E8F0;
+      --header: #ECEFF5;
+      --header-border: #D2D7E3;
+      --card: #EFF1F6;
+      --card-border: #D4D9E4;
+      --result-card: #ECEFF5;
+      --well: #E5E8F0;
+      --well-border: #D2D7E3;
+      --well-focus: #F3F5F9;
+      --result-box: #E4E7F0;
+      --result-box-border: #D5DAE5;
+      --btn-bg: #E3E6EF;
+      --btn-border: #CFD5E2;
+      --btn-hover: #DADEE9;
+      --seg-bg: #DDE1EC;
+      --seg-active: #F4F6FA;
+      --rule: #D6DBE6;
+      --row-border: #D9DEE8;
+      --ink: #181C28;
+      --ink-label: #50586E;
+      --ink-btn: #464E64;
+      --ink-row: #4B5368;
+      --ink-muted: #555E75;
+      --ink-placeholder: #788199;
+      --accent: #3730A3;
+      --focus: #4338CA;
+      --focus-ring: rgba(67, 56, 202, 0.15);
+    }
 
+    :root.dark {
+      color-scheme: dark;
+      --bg: #0D1017;
+      --header: #131722;
+      --header-border: #23293A;
+      --card: #151924;
+      --card-border: #23293A;
+      --result-card: #171C28;
+      --well: #1B202E;
+      --well-border: #282F42;
+      --well-focus: #202637;
+      --result-box: #1E2434;
+      --result-box-border: #282F42;
+      --btn-bg: #1B202E;
+      --btn-border: #2A3144;
+      --btn-hover: #232A3C;
+      --seg-bg: #151924;
+      --seg-active: #2A3248;
+      --rule: #252B3D;
+      --row-border: #242A3B;
+      --ink: #EDF0F7;
+      --ink-label: #96A0B8;
+      --ink-btn: #B4BDD2;
+      --ink-row: #9CA5BD;
+      --ink-muted: #8E98B2;
+      --ink-placeholder: #656F88;
+      --accent: #9AA3FF;
+      --focus: #818CF8;
+      --focus-ring: rgba(129, 140, 248, 0.2);
+    }
 
-.note{margin:0 0 8px;color:var(--mute);font-size:.8125rem}
-#mults{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-#out{color:var(--acc);font-size:clamp(2.5rem,13vw,3.25rem);font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 16px;color:var(--mute);font-size:.875rem;font-variant-numeric:tabular-nums}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
-@media(max-width:359px){main{width:calc(100% - 24px)}h1{font-size:1.125rem}#mults,.base{gap:8px}}
-@media(min-width:600px){main{width:min(640px,100% - 48px);padding:32px 0 40px}h1{font-size:1.5rem}#mults{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(min-width:900px){main{width:min(960px,100% - 64px);grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:32px;align-items:start}header{grid-column:1/-1}.base,main>div:nth-of-type(2){grid-column:1}main>div:last-child{grid-column:2;grid-row:2/span 2;position:sticky;top:24px;padding:24px;background:var(--field);border-radius:16px}#mults{grid-template-columns:1fr 1fr}#out{font-size:3.25rem}}
-@media(min-width:1400px){main{width:min(1100px,100% - 96px)}}
-@media(max-height:500px) and (orientation:landscape){main{padding-block:12px 16px}}
-</style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Plus Jakarta Sans", "Noto Sans TC", system-ui, -apple-system, sans-serif;
+      line-height: 1.5;
+      padding-bottom: env(safe-area-inset-bottom);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .font-num {
+      font-family: "JetBrains Mono", "Plus Jakarta Sans", "Noto Sans TC", monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--header);
+      border-bottom: 1px solid var(--header-border);
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .topbar-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 12px max(12px, env(safe-area-inset-right)) 12px max(12px, env(safe-area-inset-left));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--ink-btn);
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .action-btn:hover {
+      background: var(--btn-hover);
+      color: var(--ink);
+    }
+
+    .action-btn:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btn-icon {
+      display: none;
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Main Layout */
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 16px max(12px, env(safe-area-inset-right)) 16px max(12px, env(safe-area-inset-left));
+    }
+
+    .workbench {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      background: var(--card);
+      padding: 16px;
+    }
+
+    .result-card {
+      background: var(--result-card);
+    }
+
+    /* Base & Unit Row */
+    .base-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .field-well {
+      min-width: 0;
+      border-radius: 12px;
+      border: 1px solid var(--well-border);
+      background: var(--well);
+      padding: 10px 12px;
+    }
+
+    .field-well:focus-within {
+      border-color: var(--focus);
+      background: var(--well-focus);
+      box-shadow: 0 0 0 2px var(--focus-ring);
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--ink-label);
+      cursor: text;
+    }
+
+    .field-input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      margin-top: 4px;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .field-input::placeholder {
+      color: var(--ink-placeholder);
+      font-size: 0.875rem;
+      font-weight: 400;
+    }
+
+    .field-input--lg {
+      min-height: 36px;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    /* Unit Selector */
+    .unit-box {
+      min-width: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--well-border);
+      background: var(--well);
+      padding: 10px 12px;
+    }
+
+    .unit-title {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--ink-label);
+    }
+
+    .unit-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--well-border);
+      background: var(--seg-bg);
+    }
+
+    .unit-btn {
+      min-height: 36px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink-muted);
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .unit-btn:hover {
+      color: var(--ink);
+    }
+
+    .unit-btn[aria-checked="true"] {
+      background: var(--seg-active);
+      color: var(--accent);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    .unit-btn:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 1px;
+    }
+
+    /* Multipliers Section */
+    .section-block {
+      margin-top: 24px;
+    }
+
+    .section-rule {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-rule-text {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--ink-label);
+      flex-shrink: 0;
+    }
+
+    .section-rule-line {
+      height: 1px;
+      flex: 1;
+      background: var(--rule);
+    }
+
+    .mult-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    /* Result Sheet */
+    .result-hero {
+      border-radius: 12px;
+      border: 1px solid var(--result-box-border);
+      background: var(--result-box);
+      padding: 16px;
+    }
+
+    .result-out {
+      font-size: 1.875rem;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      overflow-wrap: anywhere;
+    }
+
+    .result-rows {
+      margin-top: 16px;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--row-border);
+    }
+
+    .result-row:first-child {
+      padding-top: 4px;
+    }
+
+    .result-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 4px;
+    }
+
+    .result-row-label {
+      font-size: 0.875rem;
+      color: var(--ink-row);
+    }
+
+    .result-row-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* Breakpoints */
+    @media (min-width: 340px) {
+      .mult-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 360px) {
+      .btn-icon {
+        display: inline-block;
+      }
+
+      .base-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+    }
+
+    :root:not(.dark) #sunIcon,
+    :root.dark #moonIcon {
+      display: none;
+    }
+
+    @media (min-width: 640px) {
+      .topbar-inner {
+        padding: 14px 24px;
+        gap: 16px;
+      }
+
+      .title {
+        font-size: 1.125rem;
+      }
+
+      .actions {
+        gap: 8px;
+      }
+
+      .action-btn {
+        padding: 6px 12px;
+      }
+
+      .container {
+        padding: 24px;
+      }
+
+      .workbench {
+        gap: 20px;
+      }
+
+      .card {
+        padding: 24px;
+      }
+
+      .field-well {
+        padding: 10px 14px;
+      }
+
+      .field-input {
+        font-size: 1.125rem;
+      }
+
+      .field-input--lg {
+        font-size: 1.75rem;
+      }
+
+      .mult-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .result-hero {
+        padding: 20px;
+      }
+
+      .result-out {
+        font-size: 2.25rem;
+      }
+
+      .result-row {
+        gap: 16px;
+        padding: 14px 0;
+      }
+
+      .result-row-value {
+        font-size: 1.125rem;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .workbench {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
+      .input-card {
+        grid-column: span 7;
+      }
+
+      .result-card {
+        grid-column: span 5;
+        position: sticky;
+        top: 24px;
+      }
+
+      .mult-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .topbar-inner {
+        padding: 14px 32px;
+      }
+
+      .container {
+        padding: 28px 32px;
+      }
+
+      .workbench {
+        gap: 24px;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .result-out {
+        font-size: 2.75rem;
+      }
+
+      .result-row-value {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
 </head>
 <body>
-<main>
-<header><h1>砲擊倍率計算</h1><button id="clear">全部清空</button><button id="theme">切換深淺</button></header>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <h1 class="title">砲擊倍率計算</h1>
+      <div class="actions">
+        <button id="clearBtn" type="button" class="action-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          <span>全部清空</span>
+        </button>
+        <button id="themeBtn" type="button" class="action-btn">
+          <svg id="moonIcon" class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+          <svg id="sunIcon" class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" /><path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" /><path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          <span>切換深淺</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-<div class="base">
-<label class="tile big">砲擊數字<input id="base" type="number" inputmode="decimal" step="any" placeholder=" "></label>
-<section class="unit-panel" aria-label="選擇數值單位">
- <span class="unit-caption">單位</span>
- <div class="unit-options" role="radiogroup" aria-label="單位">
-  <label class="unit-option"><input type="radio" name="u" value="1e8" checked><span class="unit-card">億</span></label>
-  <label class="unit-option"><input type="radio" name="u" value="1e12"><span class="unit-card">兆</span></label>
- </div>
-</section>
-</div>
+  <main class="container">
+    <div class="workbench">
+      <section aria-label="砲擊倍率計算" class="card input-card">
+        <div class="base-row">
+          <div class="field-well">
+            <label for="base" class="field-label">砲擊數字</label>
+            <input
+              id="base"
+              type="number"
+              inputmode="decimal"
+              step="any"
+              placeholder=" "
+              class="field-input field-input--lg font-num"
+            />
+          </div>
 
-<div>
-<p class="note">砲擊後增加倍率，留空 = ×1</p>
-<div id="mults"></div>
-</div>
+          <section aria-label="選擇數值單位" class="unit-box">
+            <span class="unit-title">單位</span>
+            <div class="unit-group" role="radiogroup" aria-label="單位">
+              <button type="button" class="unit-btn" role="radio" aria-checked="true" data-unit="1e8">億</button>
+              <button type="button" class="unit-btn" role="radio" aria-checked="false" data-unit="1e12">兆</button>
+            </div>
+          </section>
+        </div>
 
-<div aria-live="polite">
-<div id="out">—</div>
-<div class="meta"><span id="mult"></span><span id="raw"></span></div>
-</div>
-</main>
+        <div class="section-block">
+          <div class="section-rule">
+            <span class="section-rule-text">砲擊後增加倍率，留空 = ×1</span>
+            <span class="section-rule-line" aria-hidden="true"></span>
+          </div>
+          <div id="mults" class="mult-grid"></div>
+        </div>
+      </section>
 
-<script>
-const $=id=>document.getElementById(id);
-const names=['頭隊長技','尾隊長技','隊伍技','龍刻增傷','隊員 1 增傷','隊員 2 增傷','隊員 3 增傷','隊員 4 增傷'];
-$('mults').innerHTML=names.map(n=>`<label class="tile">${n}<input class="m" type="number" inputmode="decimal" step="any" placeholder=" "></label>`).join('');
-const ms=[...document.querySelectorAll('.m')];
-const fmt=v=>{const u=[[1e16,'京'],[1e12,'兆'],[1e8,'億']].find(([n])=>v>=n);return u?+(v/u[0]).toPrecision(6)+' '+u[1]:v.toLocaleString('zh-TW',{maximumFractionDigits:2})};
-function calc(){
-  const raw=parseFloat($('base').value),base=raw*document.querySelector('[name=u]:checked').value;
-  const mult=ms.reduce((m,i)=>m*(parseFloat(i.value)||1),1);
-  $('mult').textContent='總倍率 ×'+(+mult.toPrecision(8));
-  $('out').textContent=isNaN(raw)?'—':fmt(base*mult);
-  $('raw').textContent=isNaN(raw)?'':'原始砲擊 '+fmt(base);
-}
-document.addEventListener('input',calc);
-$('clear').onclick=()=>{document.querySelectorAll('input[type=number]').forEach(i=>i.value='');calc();};
-let dark=matchMedia('(prefers-color-scheme:dark)').matches;
-$('theme').onclick=()=>document.documentElement.style.colorScheme=(dark=!dark)?'dark':'light';
-calc();
-</script>
+      <aside aria-live="polite" class="card result-card">
+        <div class="result-hero">
+          <div id="out" class="result-out font-num">—</div>
+        </div>
+
+        <div class="result-rows">
+          <div class="result-row">
+            <div class="result-row-label">總倍率</div>
+            <div id="mult" class="result-row-value font-num">×1</div>
+          </div>
+          <div id="rawRow" class="result-row" hidden>
+            <div class="result-row-label">原始砲擊</div>
+            <div id="raw" class="result-row-value font-num">—</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const names = [
+      '頭隊長技',
+      '尾隊長技',
+      '隊伍技',
+      '龍刻增傷',
+      '隊員 1 增傷',
+      '隊員 2 增傷',
+      '隊員 3 增傷',
+      '隊員 4 增傷'
+    ];
+
+    const multsContainer = document.getElementById('mults');
+    multsContainer.innerHTML = names
+      .map(
+        (name, idx) =>
+          `<div class="field-well">` +
+          `<label for="mult-${idx}" class="field-label">${name}</label>` +
+          `<input id="mult-${idx}" class="field-input font-num mult-input" type="number" inputmode="decimal" step="any" placeholder=" ">` +
+          `</div>`
+      )
+      .join('');
+
+    const baseInput = document.getElementById('base');
+    const multInputs = [...document.querySelectorAll('.mult-input')];
+    const unitButtons = [...document.querySelectorAll('.unit-btn')];
+    const outEl = document.getElementById('out');
+    const multEl = document.getElementById('mult');
+    const rawRowEl = document.getElementById('rawRow');
+    const rawEl = document.getElementById('raw');
+    const clearBtn = document.getElementById('clearBtn');
+    const themeBtn = document.getElementById('themeBtn');
+
+    let currentUnit = 1e8;
+
+    const fmt = (v) => {
+      const units = [
+        [1e16, '京'],
+        [1e12, '兆'],
+        [1e8, '億']
+      ];
+      const matched = units.find(([threshold]) => v >= threshold);
+      if (matched) {
+        return `${+(v / matched[0]).toPrecision(6)} ${matched[1]}`;
+      }
+      return v.toLocaleString('zh-TW', { maximumFractionDigits: 2 });
+    };
+
+    function calc() {
+      const raw = parseFloat(baseInput.value);
+      const base = raw * currentUnit;
+      const mult = multInputs.reduce((m, el) => m * (parseFloat(el.value) || 1), 1);
+
+      multEl.textContent = '×' + (+mult.toPrecision(8));
+      if (Number.isNaN(raw)) {
+        outEl.textContent = '—';
+        rawRowEl.hidden = true;
+        rawEl.textContent = '—';
+      } else {
+        outEl.textContent = fmt(base * mult);
+        rawRowEl.hidden = false;
+        rawEl.textContent = fmt(base);
+      }
+    }
+
+    unitButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        currentUnit = Number(btn.dataset.unit);
+        unitButtons.forEach((b) => b.setAttribute('aria-checked', String(b === btn)));
+        calc();
+      });
+    });
+
+    baseInput.addEventListener('input', calc);
+    multInputs.forEach((el) => el.addEventListener('input', calc));
+
+    clearBtn.addEventListener('click', () => {
+      baseInput.value = '';
+      multInputs.forEach((el) => (el.value = ''));
+      calc();
+    });
+
+    let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    function applyTheme() {
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+
+    themeBtn.addEventListener('click', () => {
+      isDark = !isDark;
+      applyTheme();
+    });
+
+    applyTheme();
+    calc();
+  </script>
 </body>
 </html>
