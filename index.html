@@ -5,29 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>砲擊倍率計算</title>
 <style>
-:root{color-scheme:light dark;--bg:light-dark(#f1f2f8,#12141c);--ink:light-dark(#171a2b,#e9ebf7);--mute:light-dark(#5b6078,#9aa0bd);--line:light-dark(#d5d8e8,#2c3044);--field:light-dark(#fff,#1b1e2b);--acc:light-dark(#4b3fe0,#a39dff);--on-acc:light-dark(#fff,#14122e)}
+:root{color-scheme:light dark;--bg:light-dark(#f1f2f8,#12141c);--ink:light-dark(#171a2b,#e9ebf7);--mute:light-dark(#5b6078,#9aa0bd);--field:light-dark(#e2e5f2,#1d2130);--acc:light-dark(#4b3fe0,#a39dff);--on-acc:light-dark(#fff,#14122e);--tint:color-mix(in oklab,var(--acc) 16%,var(--field));--thumb:light-dark(#fff,#2d3350)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.6 "Noto Sans TC",system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.5 "Noto Sans TC",system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 ::selection{background:var(--acc);color:var(--on-acc)}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-main{width:min(480px,100% - 32px);margin:0 auto;padding:20px 0 32px;display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:14px 12px}
+main{width:min(480px,100% - 32px);margin:0 auto;padding:20px 0 28px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 h1{margin:0 auto 0 0;font-size:1.25rem;line-height:1.2;white-space:nowrap}
-h2{margin:0 0 8px;font-size:.9375rem}
-h2 small{margin-left:8px;color:var(--mute);font-weight:400;font-size:.875rem}
-button{min-height:36px;padding:0 12px;background:none;border:1px solid var(--line);border-radius:999px;color:var(--mute);font:inherit;font-size:.8125rem;white-space:nowrap;cursor:pointer;transition:border-color .15s,color .15s,transform .12s cubic-bezier(.2,.8,.2,1)}
-button:hover{border-color:var(--acc);color:var(--acc)}
+button{min-height:36px;padding:0 12px;background:var(--field);border:0;border-radius:999px;color:var(--mute);font:inherit;font-size:.8125rem;white-space:nowrap;cursor:pointer;transition:color .15s,transform .12s cubic-bezier(.2,.8,.2,1)}
+button:hover{color:var(--acc)}
 button:active{transform:scale(.97)}
-input,select{min-height:44px;padding:8px 12px;background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:10px;font:inherit;caret-color:var(--acc);font-variant-numeric:tabular-nums}
-.base{display:flex;gap:10px}
-.base input{flex:1;min-width:0;font-size:1.5rem}
-select{color:var(--acc);font-weight:700;border-color:var(--acc)}
-#mults{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px}
-#mults label{display:grid;gap:4px;color:var(--mute);font-size:.8125rem}
-#mults input{width:100%;color:var(--ink);font-size:1rem}
-.total{padding-top:16px;border-top:2px solid var(--ink)}
-#out{margin:0 0 6px;color:var(--acc);font-size:clamp(2.25rem,11vw,3rem);font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.small{color:var(--mute);font-size:.875rem;font-variant-numeric:tabular-nums}
+.base{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.tile{display:block;padding:8px 12px 6px;background:var(--field);border-radius:12px;color:var(--mute);font-size:.75rem;cursor:text}
+.tile:focus-within,.tile:has(input:not(:placeholder-shown)){background:var(--tint)}
+.tile input{display:block;width:100%;min-height:32px;padding:0;background:none;border:0;outline:0;color:var(--ink);font:inherit;font-size:1.125rem;font-weight:600;caret-color:var(--acc);appearance:textfield;font-variant-numeric:tabular-nums}
+.tile input::-webkit-inner-spin-button{appearance:none}
+.tile:has(input:not(:placeholder-shown)) input{color:var(--acc)}
+.big input{font-size:1.75rem;min-height:40px}
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;background:var(--field);border-radius:14px;box-shadow:inset 0 1px 3px rgb(0 0 0/.22)}
+.seg::before{content:"";position:absolute;inset:4px auto 4px 4px;width:calc(50% - 4px);border-radius:10px;background:var(--thumb);box-shadow:0 1px 2px rgb(0 0 0/.25),0 6px 12px -4px rgb(0 0 0/.35),inset 0 1px 0 rgb(255 255 255/.1);transition:translate .28s cubic-bezier(.2,.8,.2,1)}
+.seg:has(label+label input:checked)::before{translate:100% 0}
+.seg label{position:relative;display:grid}
+.seg input{position:absolute;opacity:0}
+.seg span{position:relative;display:grid;place-items:center;min-width:56px;padding:0 12px;color:var(--mute);font-size:1.125rem;font-weight:700;cursor:pointer;transition:color .2s}
+.seg input:checked+span{color:var(--acc)}
+.seg input:focus-visible+span{outline:2px solid var(--acc);border-radius:10px}
+/* Simple, static unit selector */
+.base{align-items:stretch}
+.unit-panel{min-width:112px;display:flex;flex-direction:column;justify-content:center;gap:7px;padding:9px 10px;background:var(--field);border:1px solid color-mix(in oklab,var(--mute) 18%,transparent);border-radius:12px}
+.unit-caption{font-size:.75rem;font-weight:600;color:var(--mute)}
+.unit-options{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;background:color-mix(in oklab,var(--bg) 55%,var(--field));border-radius:8px}
+.unit-option{position:relative;display:block;min-width:0;cursor:pointer}
+.unit-option input{position:absolute;width:1px;height:1px;opacity:0}
+.unit-card{display:grid;min-height:34px;place-items:center;border-radius:6px;color:var(--mute);font-size:1rem;font-weight:700}
+.unit-option input:checked+.unit-card{background:var(--thumb);color:var(--acc)}
+.unit-option input:focus-visible+.unit-card{outline:2px solid var(--acc);outline-offset:1px}
+@media(max-width:380px){.base{grid-template-columns:minmax(0,1fr) 112px;gap:8px}.unit-panel{min-width:0;padding:8px}}
+
+
+.note{margin:0 0 8px;color:var(--mute);font-size:.8125rem}
+#mults{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#out{color:var(--acc);font-size:clamp(2.5rem,13vw,3.25rem);font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 16px;color:var(--mute);font-size:.875rem;font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -35,42 +55,43 @@ select{color:var(--acc);font-weight:700;border-color:var(--acc)}
 <main>
 <header><h1>砲擊倍率計算</h1><button id="clear">全部清空</button><button id="theme">切換深淺</button></header>
 
-<div>
-<h2>砲擊數字</h2>
 <div class="base">
-<input id="base" type="number" inputmode="decimal" step="any" aria-label="砲擊數值">
-<select id="unit" aria-label="單位"><option value="1e8">億</option><option value="1e12">兆</option></select>
-</div>
+<label class="tile big">砲擊數字<input id="base" type="number" inputmode="decimal" step="any" placeholder=" "></label>
+<section class="unit-panel" aria-label="選擇數值單位">
+ <span class="unit-caption">單位</span>
+ <div class="unit-options" role="radiogroup" aria-label="單位">
+  <label class="unit-option"><input type="radio" name="u" value="1e8" checked><span class="unit-card">億</span></label>
+  <label class="unit-option"><input type="radio" name="u" value="1e12"><span class="unit-card">兆</span></label>
+ </div>
+</section>
 </div>
 
 <div>
-<h2>砲擊後增加倍率<small>留空 = ×1</small></h2>
+<p class="note">砲擊後增加倍率，留空 = ×1</p>
 <div id="mults"></div>
 </div>
 
-<div class="total" aria-live="polite">
-<h2>計算結果</h2>
+<div aria-live="polite">
 <div id="out">—</div>
-<div class="small" id="mult"></div>
-<div class="small" id="raw"></div>
+<div class="meta"><span id="mult"></span><span id="raw"></span></div>
 </div>
 </main>
 
 <script>
 const $=id=>document.getElementById(id);
 const names=['頭隊長技','尾隊長技','隊伍技','龍刻增傷','隊員 1 增傷','隊員 2 增傷','隊員 3 增傷','隊員 4 增傷'];
-$('mults').innerHTML=names.map(n=>`<label>${n}<input class="m" type="number" inputmode="decimal" step="any"></label>`).join('');
+$('mults').innerHTML=names.map(n=>`<label class="tile">${n}<input class="m" type="number" inputmode="decimal" step="any" placeholder=" "></label>`).join('');
 const ms=[...document.querySelectorAll('.m')];
 const fmt=v=>{const u=[[1e16,'京'],[1e12,'兆'],[1e8,'億']].find(([n])=>v>=n);return u?+(v/u[0]).toPrecision(6)+' '+u[1]:v.toLocaleString('zh-TW',{maximumFractionDigits:2})};
 function calc(){
-  const raw=parseFloat($('base').value),base=raw*$('unit').value;
+  const raw=parseFloat($('base').value),base=raw*document.querySelector('[name=u]:checked').value;
   const mult=ms.reduce((m,i)=>m*(parseFloat(i.value)||1),1);
   $('mult').textContent='總倍率 ×'+(+mult.toPrecision(8));
   $('out').textContent=isNaN(raw)?'—':fmt(base*mult);
-  $('raw').textContent=isNaN(raw)?'':'原始砲擊：'+fmt(base);
+  $('raw').textContent=isNaN(raw)?'':'原始砲擊 '+fmt(base);
 }
 document.addEventListener('input',calc);
-$('clear').onclick=()=>{document.querySelectorAll('input').forEach(i=>i.value='');calc();};
+$('clear').onclick=()=>{document.querySelectorAll('input[type=number]').forEach(i=>i.value='');calc();};
 let dark=matchMedia('(prefers-color-scheme:dark)').matches;
 $('theme').onclick=()=>document.documentElement.style.colorScheme=(dark=!dark)?'dark':'light';
 calc();
